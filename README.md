@@ -6,7 +6,7 @@
 ========
 
 1. clone 下本仓库。
-2. 更新 submoudle ，服务器部分需要用到 skynet ；客户端部分需要用到 lsocket 。
+2. 更新 submodule ，服务器部分需要用到 skynet ；客户端部分需要用到 lsocket 。
 ```
 git submodule update --init
 ```
