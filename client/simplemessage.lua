@@ -4,8 +4,8 @@ local sproto = require "sproto"
 local message = {}
 local var = {
 	session_id = 0 ,
-	handler = {},
 	session = {},
+	object = {},
 }
 
 function message.register(name)
@@ -32,8 +32,8 @@ function message.connect()
 	socket.isconnect()
 end
 
-function message.handler()
-	return var.handler
+function message.bind(obj, handler)
+	var.object[obj] = handler
 end
 
 function message.request(name, args)
@@ -52,12 +52,27 @@ function message.update(ti)
 	assert(t == "RESPONSE")
 	local session = var.session[session_id]
 	var.session[session_id] = nil
-	local f = assert(var.handler[session.name])
-	if not err then
-		f(session.req, resp, session_id)
-	else
-		print(string.format("session [%d] error : %s", session_id, err))
+
+	for obj, handler in pairs(var.object) do
+		if err then
+			local f = handler.__error
+			if f then
+				local ok, err_msg = pcall(f, obj, session.name, err, session.req, session_id)
+				if not ok then
+					print(string.format("session %s[%d] error(%s) for [%s] error : %s", session.name, session_id, err, tostring(obj), err_msg))
+				end
+			end
+		else
+			local f = handler[session.name]
+			if f then
+				local ok, err_msg = pcall(f, obj, session.req, resp, session_id)
+				if not ok then
+					print(string.format("session %s[%d] for [%s] error : %s", session.name, session_id, tostring(obj), err_msg))
+				end
+			end
+		end
 	end
+
 	return true
 end
 

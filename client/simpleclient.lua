@@ -8,17 +8,24 @@ package.cpath = string.format("%s/skynet/luaclib/?.so;%s/lsocket/?.so", PATH, PA
 local socket = require "simplesocket"
 local message = require "simplemessage"
 
-local event = message.handler()
 message.register(string.format("%s/proto/%s.sproto", PATH, "proto"))
 
 message.peer(IP, 5678)
 message.connect()
 
-function event.ping()
+local event = {}
+
+message.bind({}, event)
+
+function event:__error(what, err, req, session)
+	print("error", what, err)
+end
+
+function event:ping()
 	print("ping")
 end
 
-function event.signin(req, resp)
+function event:signin(req, resp)
 	print("signin", req.userid, resp.ok)
 	if resp.ok then
 		message.request "ping"	-- should error before login
@@ -29,7 +36,7 @@ function event.signin(req, resp)
 	end
 end
 
-function event.signup(req, resp)
+function event:signup(req, resp)
 	print("signup", resp.ok)
 	if resp.ok then
 		message.request("signin", { userid = req.userid })
@@ -38,7 +45,7 @@ function event.signup(req, resp)
 	end
 end
 
-function event.login(_, resp)
+function event:login(_, resp)
 	print("login", resp.ok)
 	if resp.ok then
 		message.request "ping"
