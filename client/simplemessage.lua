@@ -9,14 +9,11 @@ local var = {
 }
 
 function message.register(name)
-	var.host = sproto.parse [[
-		.package {
-			type 0 : integer
-			session 1 : integer
-			ud 2 : string
-		}
-	]] :host "package"
-	local f = assert(io.open(name))
+	local f = assert(io.open(name .. ".s2c.sproto"))
+	local t = f:read "a"
+	f:close()
+	var.host = sproto.parse(t):host "package"
+	local f = assert(io.open(name .. ".c2s.sproto"))
 	local t = f:read "a"
 	f:close()
 	var.request = var.host:attach(sproto.parse(t))
@@ -49,25 +46,36 @@ function message.update(ti)
 		return false
 	end
 	local t, session_id, resp, err = var.host:dispatch(msg)
-	assert(t == "RESPONSE")
-	local session = var.session[session_id]
-	var.session[session_id] = nil
-
-	for obj, handler in pairs(var.object) do
-		if err then
-			local f = handler.__error
+	if t == "REQUEST" then
+		for obj, handler in pairs(var.object) do
+			local f = handler[session_id]	-- session_id is request type
 			if f then
-				local ok, err_msg = pcall(f, obj, session.name, err, session.req, session_id)
+				local ok, err_msg = pcall(f, obj, resp)	-- resp is content of push
 				if not ok then
-					print(string.format("session %s[%d] error(%s) for [%s] error : %s", session.name, session_id, err, tostring(obj), err_msg))
+					print(string.format("push %s for [%s] error : %s", session_id, tostring(obj), err_msg))
 				end
 			end
-		else
-			local f = handler[session.name]
-			if f then
-				local ok, err_msg = pcall(f, obj, session.req, resp, session_id)
-				if not ok then
-					print(string.format("session %s[%d] for [%s] error : %s", session.name, session_id, tostring(obj), err_msg))
+		end
+	else
+		local session = var.session[session_id]
+		var.session[session_id] = nil
+
+		for obj, handler in pairs(var.object) do
+			if err then
+				local f = handler.__error
+				if f then
+					local ok, err_msg = pcall(f, obj, session.name, err, session.req, session_id)
+					if not ok then
+						print(string.format("session %s[%d] error(%s) for [%s] error : %s", session.name, session_id, err, tostring(obj), err_msg))
+					end
+				end
+			else
+				local f = handler[session.name]
+				if f then
+					local ok, err_msg = pcall(f, obj, session.req, resp, session_id)
+					if not ok then
+						print(string.format("session %s[%d] for [%s] error : %s", session.name, session_id, tostring(obj), err_msg))
+					end
 				end
 			end
 		end

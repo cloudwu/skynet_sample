@@ -21,6 +21,7 @@ function cli:login()
 	data.fd = self.fd
 	self.login = true
 	log("login succ %s fd=%d", data.userid, self.fd)
+	client.push(self, "push", { text = "welcome" })	-- push message to client
 	return { ok = true }
 end
 

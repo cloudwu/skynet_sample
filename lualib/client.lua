@@ -42,11 +42,17 @@ function client.close(fd)
 	proxy.close(fd)
 end
 
+function client.push(c, t, data)
+	proxy.write(c.fd, sender(t, data))
+end
+
 function client.init(name)
 	return function ()
 		local protoloader = skynet.uniqueservice "protoloader"
-		local slot = skynet.call(protoloader, "lua", "index", name)
+		local slot = skynet.call(protoloader, "lua", "index", name .. ".c2s")
 		host = sprotoloader.load(slot):host "package"
+		local slot2 = skynet.call(protoloader, "lua", "index", name .. ".s2c")
+		sender = host:attach(sprotoloader.load(slot2))
 	end
 end
 

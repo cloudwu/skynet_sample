@@ -8,7 +8,7 @@ package.cpath = string.format("%s/skynet/luaclib/?.so;%s/lsocket/?.so", PATH, PA
 local socket = require "simplesocket"
 local message = require "simplemessage"
 
-message.register(string.format("%s/proto/%s.sproto", PATH, "proto"))
+message.register(string.format("%s/proto/%s", PATH, "proto"))
 
 message.peer(IP, 5678)
 message.connect()
@@ -52,6 +52,10 @@ function event:login(_, resp)
 	else
 		error "Can't login"
 	end
+end
+
+function event:push(args)
+	print("server push", args.text)
 end
 
 message.request("signin", { userid = "alice" })
