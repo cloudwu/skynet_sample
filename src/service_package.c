@@ -50,6 +50,12 @@ queue_init(struct queue *q, int sz) {
 	q->sz = sz;
 }
 
+static void
+queue_exit(struct queue *q) {
+	skynet_free(q->buffer);
+	q->buffer = NULL;
+}
+
 static int
 queue_empty(struct queue *q) {
 	return q->head == q->tail;
@@ -345,6 +351,8 @@ package_create(void) {
 
 void
 package_release(struct package *P) {
+	queue_exit(&P->request);
+	queue_exit(&P->response);
 	skynet_free(P);
 }
 
