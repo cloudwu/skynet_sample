@@ -19,18 +19,21 @@ function client.dispatch( c )
 		local msg, sz = proxy.read(fd)
 		local type, name, args, response = host:dispatch(msg, sz)
 		assert(type == "REQUEST")
+		if c.exit then
+			return c
+		end
 		local f = handler[name]
 		if f then
-			local ok, result = pcall(f, c, args)
-			if ok then
-				proxy.write(fd, response(result))
-			else
-				log("raise error = %s", result)
-				proxy.write(fd, response(ERROR, result))
-			end
-			if c.exit then
-				return c
-			end
+			-- f may block , so fork and run
+			skynet.fork(function()
+				local ok, result = pcall(f, c, args)
+				if ok then
+					proxy.write(fd, response(result))
+				else
+					log("raise error = %s", result)
+					proxy.write(fd, response(ERROR, result))
+				end
+			end)
 		else
 			-- unsupported command, disconnected
 			error ("Invalid command " .. name)
