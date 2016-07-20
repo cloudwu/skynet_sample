@@ -12,6 +12,13 @@ function socket.connect(addr, port)
 	if fd == nil then
 		error(socket.error)
 	end
+
+	lsocket.select(nil, {fd})
+	local ok, errmsg = fd:status()
+	if not ok then
+		error(socket.error)
+	end
+
 	message = ""
 end
 
