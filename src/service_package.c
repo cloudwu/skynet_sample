@@ -46,8 +46,9 @@ static void
 queue_init(struct queue *q, int sz) {
 	q->head = 0;
 	q->tail = 0;
-	q->buffer = NULL;
 	q->sz = sz;
+	q->cap = 4;
+	q->buffer = skynet_malloc(q->cap * q->sz);
 }
 
 static void
@@ -83,8 +84,6 @@ queue_push(struct queue *q, const void *value) {
 		// full
 		assert(q->sz > 0);
 		int cap = q->cap * 2;
-		if (cap == 0)
-			cap = 4;
 		char * tmp = skynet_malloc(cap * q->sz);
 		int i;
 		int head = q->head;
@@ -97,10 +96,10 @@ queue_push(struct queue *q, const void *value) {
 		}
 		skynet_free(q->buffer);
 		q->head = 0;
-		q->tail = q->cap ? q->cap : 1;
+		slot = tmp + (q->cap-1) * q->sz;
+		q->tail = q->cap;
 		q->cap = cap;
 		q->buffer = tmp;
-		slot = tmp;
 	}
 	memcpy(slot, value, q->sz);
 }
