@@ -16,6 +16,7 @@ local socket_init = {}
 local function close_agent(addr)
 	local fd = assert(socket_addr_fd[addr])
 	socket_fd_addr[fd] = nil
+	socket_addr_fd[addr] = nil
 end
 
 local function subscribe(fd)
