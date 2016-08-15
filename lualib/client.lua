@@ -5,6 +5,7 @@ local log = require "log"
 
 local client = {}
 local host
+local sender
 local handler = {}
 
 function client.handler()
