@@ -16,8 +16,9 @@ local function free_agent(agent)
 end
 
 function manager.assign(fd, userid)
+	local agent
 	repeat
-		local agent = users[userid]
+		agent = users[userid]
 		if not agent then
 			agent = new_agent()
 			if not users[userid] then
