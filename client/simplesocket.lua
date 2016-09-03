@@ -37,7 +37,10 @@ function socket.read(ti)
 	while true do
 		local ok, msg, n = pcall(string.unpack, ">s2", message)
 		if not ok then
-			local rd = lsocket.select { fd , ti }
+			local rd = lsocket.select({fd}, ti) 
+			if not rd then
+				return nil
+			end
 			if next(rd) == nil then
 				return nil
 			end
