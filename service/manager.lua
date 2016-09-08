@@ -39,7 +39,7 @@ end
 
 service.init {
 	command = manager,
-	data = users,
+	info = users,
 }
 
 
