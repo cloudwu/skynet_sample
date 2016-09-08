@@ -42,6 +42,6 @@ end
 
 service.init {
 	command = auth,
-	data = users,
+	info = users,
 	init = client.init "proto",
 }
