@@ -30,5 +30,5 @@ end
 
 service.init {
 	command = loader,
-	data = data
+	info = data
 }
