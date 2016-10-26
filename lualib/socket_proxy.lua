@@ -39,6 +39,7 @@ function proxy.read(fd)
 	if ok then
 		return msg,sz
 	else
+		map[fd] = nil
 		error "disconnect"
 	end
 end
